@@ -12,6 +12,7 @@ typedef struct {
 
 #define AUDIOMIXER_MAX_VOLUME 100
 
+pthread_mutex_t* get_mutex(void);
 // init() must be called before any other functions,
 // cleanup() must be called last to stop playback threads and free memory.
 void AudioMixer_init(void);

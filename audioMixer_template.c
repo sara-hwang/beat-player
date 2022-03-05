@@ -19,7 +19,7 @@ static short *playbackBuffer = NULL;
 // Playback threading
 static _Bool stopping = false;
 static pthread_t playbackThreadId;
-// static pthread_mutex_t audioMutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t audioMutex = PTHREAD_MUTEX_INITIALIZER;
 // static pthread_cond_t audio_cond_var = PTHREAD_COND_INITIALIZER;
 
 typedef struct {
@@ -33,6 +33,11 @@ typedef struct {
 	int location;
 } playbackSound_t;
 static playbackSound_t soundBites[MAX_SOUND_BITES];
+
+pthread_mutex_t* get_mutex(void)
+{
+	return &audioMutex;
+}
 
 pthread_t* get_playback_pthread(void)
 {
@@ -135,8 +140,8 @@ void AudioMixer_freeWaveFileData(wavedata_t* pSound)
 void AudioMixer_queueSound(wavedata_t* pSound)
 {
 	// Ensure we are only being asked to play "good" sounds:
-	assert(pSound->numSamples > 0);
-	assert(pSound->pData);
+	//assert(pSound->numSamples > 0);
+	// assert(pSound->pData);
 
 	// Insert the sound by searching for an empty sound bite spot
 	// pthread_mutex_lock(&audioMutex);
@@ -255,7 +260,9 @@ void* playbackThread(void* arg)
 {
 	while (!stopping) {
 		// Generate next block of audio
+		pthread_mutex_lock(get_mutex());
 		fillPlaybackBuffer(playbackBuffer, playbackBufferSize);
+		pthread_mutex_unlock(get_mutex());
 		// Output the audio
 		snd_pcm_sframes_t frames = snd_pcm_writei(handle,
 				playbackBuffer, playbackBufferSize);

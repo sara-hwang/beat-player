@@ -40,17 +40,23 @@ pthread_t* get_udp_pthread(void)
 
 void queue_hihat(void)
 {
+	pthread_mutex_lock(get_mutex());
 	AudioMixer_queueSound(&hihat);
+	pthread_mutex_unlock(get_mutex());
 }
 
 void queue_snare(void)
 {
+	pthread_mutex_lock(get_mutex());
 	AudioMixer_queueSound(&snare);
+	pthread_mutex_unlock(get_mutex());
 }
 
 void queue_drum(void)
 {
+	pthread_mutex_lock(get_mutex());
 	AudioMixer_queueSound(&drum);
+	pthread_mutex_unlock(get_mutex());
 }
 
 void* play_beat(void* args)
@@ -59,15 +65,21 @@ void* play_beat(void* args)
 	wavedata_t* my_beat[8] = {&drum, &hihat, &hihat, &snare, &drum, &hihat, &hihat, &snare};
 	while(1){
 		for(int i = 0; i < 8 && (strncmp(get_beat(), "rock", BEAT_ID_LENGTH) == 0); i++){
+			pthread_mutex_lock(get_mutex());
 			AudioMixer_queueSound(&hihat);
+			pthread_mutex_unlock(get_mutex());
 			if(rock_beat[i] != NULL){
+				pthread_mutex_lock(get_mutex());
 				AudioMixer_queueSound(rock_beat[i]);
+				pthread_mutex_unlock(get_mutex());
 			}
 			sleep_event(30000/bpm);
 		}
 		for(int i = 0; i < 8 && (strncmp(get_beat(), "mine", BEAT_ID_LENGTH) == 0); i++){
+			pthread_mutex_lock(get_mutex());
 			AudioMixer_queueSound(&drum);
 			AudioMixer_queueSound(my_beat[i]);
+			pthread_mutex_unlock(get_mutex());
 			sleep_event(30000/bpm);
 		}
 		

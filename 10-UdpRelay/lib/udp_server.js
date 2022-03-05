@@ -19,8 +19,8 @@ exports.listen = function(server) {
 
 function handleCommand(socket) {
 	// Pased string of comamnd to relay
-	socket.on('prime', function(data) {
-		console.log('prime command: ' + data);
+	socket.on('beat-box', function(data) {
+		console.log('command: ' + data);
 
 		// Info for connecting to the local process via UDP
 		var PORT = 8088;
@@ -43,8 +43,18 @@ function handleCommand(socket) {
 			console.log("UDP Client: message Rx" + remote.address + ':' + remote.port +' - ' + message);
 
 			var reply = message.toString('utf8')
-			socket.emit('commandReply', reply);
 
+			if(data.localeCompare('vol_get') == 0 || 
+			   data.localeCompare('vol_up') == 0 || 
+			   data.localeCompare('vol_down') == 0){
+				socket.emit('vol_reply', reply);
+			}
+			else if(data.localeCompare('tempo_get') == 0 || 
+				    data.localeCompare('tempo_up') == 0 || 
+					data.localeCompare('tempo_down') == 0){
+				socket.emit('tempo_reply', reply);
+			}
+			
 			client.close();
 
 		});

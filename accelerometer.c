@@ -59,12 +59,14 @@ void* accelerometer_thread(void* args)
     int i2cFileDesc = initI2cBus(I2CDRV_LINUX_BUS1, I2C_DEVICE_ADDRESS);
     writeI2cReg(i2cFileDesc, CTRL_REG1, 1);
     unsigned char* buffer = malloc(NUM_BYTES_TO_READ);
-    int16_t prev_x = 0;
-    int16_t prev_y = 0;
-    int16_t prev_z = 0;    
-    int x_threshold = 1000;
-    int y_threshold = 1000;
-    int z_threshold = 1000;
+    int x_threshold = 2000;
+    int y_threshold = 2000;
+    int z_threshold = 2000;
+    memset(buffer, 0, NUM_BYTES_TO_READ);
+    readI2cReg(i2cFileDesc, STATUS, buffer);
+    int16_t prev_x = (buffer[OUT_X_MSB] << 8) | (buffer[OUT_X_LSB]);
+    int16_t prev_y = (buffer[OUT_Y_MSB] << 8) | (buffer[OUT_Y_LSB]);
+    int16_t prev_z = (buffer[OUT_Z_MSB] << 8) | (buffer[OUT_Z_LSB]);
     while(1){
         // Read a register:
         memset(buffer, 0, NUM_BYTES_TO_READ);
@@ -73,13 +75,16 @@ void* accelerometer_thread(void* args)
         int16_t y = (buffer[OUT_Y_MSB] << 8) | (buffer[OUT_Y_LSB]);
         int16_t z = (buffer[OUT_Z_MSB] << 8) | (buffer[OUT_Z_LSB]);
         if(abs(prev_x - x) > x_threshold){
-            //queue_hihat();
+            queue_hihat();
+            sleep_event(100);
         }
         if(abs(prev_y - y) > y_threshold){
-            //queue_snare();
+            queue_snare();
+            sleep_event(100);
         }
         if(abs(prev_z - z) > z_threshold){
-            //queue_drum();
+            queue_drum();
+            sleep_event(100);
         }
         prev_x = x;
         prev_y = y;
