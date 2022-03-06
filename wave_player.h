@@ -17,6 +17,7 @@
 #include "joystick.h"
 #include "accelerometer.h"
 #include "udp.h"
+#include "files.h"
 
 #define DRUM_FILE "./wave-files/100051__menegass__gui-drum-bd-hard.wav"
 #define SNARE_FILE "./wave-files/100059__menegass__gui-drum-snare-soft.wav"

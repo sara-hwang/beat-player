@@ -25,7 +25,7 @@ char* get_path(int index)
 	return paths[index];
 }
 
-void writeToFile(char *fileName, char* value)
+void file_write(char *fileName, char* value)
 {
     // Use fopen() to open the file for write access.
     FILE *pFile = fopen(fileName, "w");
@@ -37,6 +37,22 @@ void writeToFile(char *fileName, char* value)
 	fprintf(pFile, "%s", value);
     // Close the file using fclose():
     fclose(pFile);
+}
+
+int file_read(char* fileName, char* buff)
+{
+    // open file
+    FILE* pFile = fopen(fileName, "r");
+    if (pFile == NULL) {
+        printf("ERROR: Unable to open file (%s) for read\n", fileName);
+        exit(-1);
+    }
+    // Read string (line)
+    unsigned int max_length = MAX_LENGTH;
+	int bytes_read = getline(&buff, &max_length, pFile);
+    // Close file
+    fclose(pFile);
+	return bytes_read;
 }
 
 void close_fd(void)

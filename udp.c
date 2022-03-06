@@ -147,6 +147,14 @@ char* call_command(char buffer[MAX_LENGTH])
         memset(reply, 0, strlen(temp) + 1);
         strcpy(reply, temp);
     }
+    else if((strcmp(buffer, "uptime") == 0)){
+        free(reply);
+        char temp[MAX_LENGTH];
+        file_read(UPTIME_PATH, temp);
+        reply = malloc(strlen(temp) + 1);
+        memset(reply, 0, strlen(temp) + 1);
+        strcpy(reply, temp);
+    }
     else{
         free(reply);
         reply = NULL;

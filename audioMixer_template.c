@@ -140,8 +140,8 @@ void AudioMixer_freeWaveFileData(wavedata_t* pSound)
 void AudioMixer_queueSound(wavedata_t* pSound)
 {
 	// Ensure we are only being asked to play "good" sounds:
-	//assert(pSound->numSamples > 0);
-	// assert(pSound->pData);
+	assert(pSound->numSamples > 0);
+	assert(pSound->pData);
 
 	// Insert the sound by searching for an empty sound bite spot
 	// pthread_mutex_lock(&audioMutex);

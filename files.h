@@ -26,11 +26,11 @@ char* get_path(int);
 // desc: read a line from a file
 // param: name of the file to be read from, the buffer to store the value
 // returns: number of bytes read
-int readFromFile(char*, char*);
+int file_read(char* filename, char* buffer);
 
 // desc: write a string to a file
 // param: name of the file to be written to, the string to write
-void writeToFile(char*, char*);
+void file_write(char* filename, char* value);
 
 // desc: close all active file descriptors
 void close_fd(void);

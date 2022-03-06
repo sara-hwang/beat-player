@@ -54,6 +54,9 @@ function handleCommand(socket) {
 					data.localeCompare('tempo_down') == 0){
 				socket.emit('tempo_reply', reply);
 			}
+			else if(data.localeCompare('uptime') == 0){
+				socket.emit('uptime_reply', reply);
+			}
 			
 			client.close();
 

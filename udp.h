@@ -9,6 +9,7 @@
 #include <arpa/inet.h>
 
 #define PORT_NUMBER 8088
+#define UPTIME_PATH "/proc/uptime"
 
 struct arguements{
     int localPort;

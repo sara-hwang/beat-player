@@ -51,7 +51,7 @@ void initJoyStick(void)
 {
 	// export pins
 	for(int i = 0; i < NUM_EVENTS; i++){
-		writeToFile(EXPORT_FILE, pin_numbers[i]);
+		file_write(EXPORT_FILE, pin_numbers[i]);
 	}
 	sleep_event(330);
 	char buffer[MAX_LENGTH];
@@ -60,12 +60,12 @@ void initJoyStick(void)
 		// set each GPIO's direction attribute to "in" for input
 		strcpy(buffer, get_path(i));
 		strcat(buffer, "/direction");
-		writeToFile(buffer, "in");
+		file_write(buffer, "in");
 		memset(buffer, '\0', MAX_LENGTH);
 		// set each GPIO's edge attribute to "both"
 		strcpy(buffer, get_path(i));
 		strcat(buffer, "/edge");
-		writeToFile(buffer, "both");
+		file_write(buffer, "both");
 		memset(buffer, '\0', MAX_LENGTH);
 	}
 	pthread_create(&joystickThreadId, NULL, poll_joystick, NULL);			 
