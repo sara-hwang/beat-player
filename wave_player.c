@@ -10,11 +10,11 @@ static int bpm = DEFAULT_BPM;
 
 void set_bpm(int new_bpm)
 {
-	if(new_bpm <= 300 && new_bpm >= 40){
+	if(new_bpm <= MAX_BPM && new_bpm >= MIN_BPM){
 		bpm = new_bpm;
 	}
 	else{
-		printf("BPM must be in range [40, 300]\n");
+		printf("BPM must be in range [%d, %d]\n", MIN_BPM, MAX_BPM);
 	}
 }
 

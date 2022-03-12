@@ -39,11 +39,11 @@ void set_beat(char* name)
 }
 
 // Sleeps for NUMBER number of milliseconds.
-void sleep_event(int num_milliseconds)
+void sleep_event(long number)
 {
 	long seconds = 0;
 	long nanoseconds = NANOSECONDS_PER_MILLISECOND;
-	struct timespec reqDelay = {seconds, nanoseconds*num_milliseconds};
+	struct timespec reqDelay = {seconds, nanoseconds*number};
 	nanosleep(&reqDelay, (struct timespec *) NULL);
 }
 
@@ -53,7 +53,7 @@ void initJoyStick(void)
 	for(int i = 0; i < NUM_EVENTS; i++){
 		file_write(EXPORT_FILE, pin_numbers[i]);
 	}
-	sleep_event(330);
+	sleep_event(500);
 	char buffer[MAX_LENGTH];
 	memset(buffer, '\0', MAX_LENGTH);
 	for(int i = 0; i < NUM_EVENTS; i++){
@@ -65,7 +65,12 @@ void initJoyStick(void)
 		// set each GPIO's edge attribute to "both"
 		strcpy(buffer, get_path(i));
 		strcat(buffer, "/edge");
-		file_write(buffer, "both");
+		file_write(buffer, "rising");
+		memset(buffer, '\0', MAX_LENGTH);
+		// set each GPIO's active_low attribute to "false"
+		strcpy(buffer, get_path(i));
+		strcat(buffer, "/active_low");
+		file_write(buffer, "1");
 		memset(buffer, '\0', MAX_LENGTH);
 	}
 	pthread_create(&joystickThreadId, NULL, poll_joystick, NULL);			 
@@ -127,7 +132,8 @@ int epoll_wait_input(void)
 		return -1;
 	}
 	// ignore first 2 triggers
-	for(int i = 0; i <= NUM_TRIGGERS_IGNORED; i++) {
+	for(int i = 0; i <= 1; i++) {
+		// printf("%d\n", i);
 		// information gets returned in the epoll struct passed in second param
 		int waitRet = epoll_wait(get_fd(EPOLL_FD_INDEX), get_epollStruct_addr(), NUM_EVENTS, -1);
 		if (waitRet == -1){
@@ -143,27 +149,69 @@ int epoll_wait_input(void)
 void* poll_joystick(void* args)
 {
 	enum direction {left=0, right=1, up=2, down=3, in=4};
+	char* pointer = malloc(1);
+	*pointer = '1';
 	while(1){
 		// Wait for an edge trigger:
 		enum direction joystick = epoll_wait_input();
 		if (joystick == -1) {
 			exit(EXIT_FAILURE);
 		}
-		else if(joystick == get_fd(in)){
-			beat_index = (beat_index + 1) % NUM_BEATS;
+
+		char buffer[1] = {0};
+		char file_name[MAX_LENGTH];
+
+		if(joystick == get_fd(in)){
+			memset(file_name, '\0', MAX_LENGTH);
+			strcpy(file_name, get_path(in));
+			strcat(file_name, "/value");
+			do{
+				beat_index = (beat_index + 1) % NUM_BEATS;
+				sleep(1);
+				file_read(file_name, buffer);
+			}while(strncmp(buffer, pointer, 1) == 0);
 		}
 		else if(joystick == get_fd(left)) {
-            set_bpm(get_bpm() - 5);
+			memset(file_name, '\0', MAX_LENGTH);
+			strcpy(file_name, get_path(left));
+			strcat(file_name, "/value");
+			do{
+				set_bpm(get_bpm() - 5);
+				sleep(1);
+				file_read(file_name, buffer);
+			}while(strncmp(buffer, pointer, 1) == 0);
 		}
 		else if(joystick == get_fd(right)) {
-			set_bpm(get_bpm() + 5);
+			memset(file_name, '\0', MAX_LENGTH);
+			strcpy(file_name, get_path(right));
+			strcat(file_name, "/value");
+			do{
+				set_bpm(get_bpm() + 5);
+				sleep(1);
+				file_read(file_name, buffer);
+			}while(strncmp(buffer, pointer, 1) == 0);
 		}
 		else if(joystick == get_fd(up)){
-			AudioMixer_setVolume(AudioMixer_getVolume() + 5);
+			memset(file_name, '\0', MAX_LENGTH);
+			strcpy(file_name, get_path(up));
+			strcat(file_name, "/value");
+			do{
+				AudioMixer_setVolume(AudioMixer_getVolume() + 5);
+				sleep(1);
+				file_read(file_name, buffer);
+			}while(strncmp(buffer, pointer, 1) == 0);
 		}
         else if(joystick == get_fd(down)){
-			AudioMixer_setVolume(AudioMixer_getVolume() - 5);
+			memset(file_name, '\0', MAX_LENGTH);
+			strcpy(file_name, get_path(down));
+			strcat(file_name, "/value");
+			do{
+				AudioMixer_setVolume(AudioMixer_getVolume() - 5);
+				sleep(1);
+				file_read(file_name, buffer);
+			}while(strncmp(buffer, pointer, 1) == 0);
         }
+		
     }
 	return NULL;
 }

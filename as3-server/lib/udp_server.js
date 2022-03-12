@@ -3,6 +3,7 @@
  * Respond to commands over a websocket to relay UDP commands to a local program
  */
 
+
 var socketio = require('socket.io');
 var io;
 
@@ -32,14 +33,20 @@ function handleCommand(socket) {
 			if (err) 
 				throw err;
 			console.log('UDP message sent to ' + HOST +':'+ PORT);
+			
 		});
-
+		var timer = setTimeout(function(){
+			socket.emit('local-error');
+		}, 1000);
 		client.on('listening', function () {
 			var address = client.address();
 			console.log('UDP Client: listening on ' + address.address + ":" + address.port);
+
 		});
 		// Handle an incoming message over the UDP from the local application.
 		client.on('message', function (message, remote) {
+			clearTimeout(timer);
+			socket.emit('local_ok');
 			console.log("UDP Client: message Rx" + remote.address + ':' + remote.port +' - ' + message);
 
 			var reply = message.toString('utf8')
@@ -57,10 +64,16 @@ function handleCommand(socket) {
 			else if(data.localeCompare('uptime') == 0){
 				socket.emit('uptime_reply', reply);
 			}
-			
-			client.close();
+			else if(data.localeCompare('rock') == 0 || 
+				    data.localeCompare('mine') == 0 || 
+					data.localeCompare('none') == 0 ||
+					data.localeCompare('beat_get') == 0){
+				socket.emit('mode_reply', reply);
+			}
 
+			client.close();
 		});
+
 		client.on("primer: stop", function() {
 			console.log("closed");
 		});

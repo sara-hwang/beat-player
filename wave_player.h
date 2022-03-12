@@ -19,10 +19,12 @@
 #include "udp.h"
 #include "files.h"
 
-#define DRUM_FILE "./wave-files/100051__menegass__gui-drum-bd-hard.wav"
-#define SNARE_FILE "./wave-files/100059__menegass__gui-drum-snare-soft.wav"
-#define HIHAT_FILE "./wave-files/100053__menegass__gui-drum-cc.wav"
+#define DRUM_FILE "./beatbox-wav-files/100051__menegass__gui-drum-bd-hard.wav"
+#define SNARE_FILE "./beatbox-wav-files/100059__menegass__gui-drum-snare-soft.wav"
+#define HIHAT_FILE "./beatbox-wav-files/100053__menegass__gui-drum-cc.wav"
 #define DEFAULT_BPM 120
+#define MAX_BPM 300
+#define MIN_BPM 40
 #define NANOSECONDS_PER_MILLISECOND 1000000
 
 void set_bpm(int new_bpm);

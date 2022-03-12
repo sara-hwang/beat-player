@@ -7,6 +7,8 @@
 #include <netdb.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <ctype.h>
+#include <math.h>
 
 #define PORT_NUMBER 8088
 #define UPTIME_PATH "/proc/uptime"

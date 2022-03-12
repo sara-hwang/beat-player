@@ -1,164 +1,66 @@
 #include "udp.h"
 
-// char* command_vol_up(void)
-// {    
-//     AudioMixer_setVolume(AudioMixer_getVolume() + 5);
-//     // compose reply message
-//     char buffer[] = "Received volume up command\n\0";
-//     char* reply = malloc(strlen(buffer) + 1);
-//     strcpy(reply,buffer);
-//     return reply;
-// }
-
-// char* command_vol_down(void)
-// {    
-//     AudioMixer_setVolume(AudioMixer_getVolume() - 5);
-//     // compose reply message
-//     char buffer[] = "Received volume down command\n\0";
-//     char* reply = malloc(strlen(buffer) + 1);
-//     strcpy(reply,buffer);
-//     return reply;
-// }
-
-// char* command_get_vol(void)
-// {
-//     // compose reply message
-//     char buffer[] = "Received get volume command\n\0";
-//     char* reply = malloc(strlen(buffer) + 1);
-//     strcpy(reply,buffer);
-//     return reply;
-// }
-
-// char* command_tempo_up(void)
-// {
-//     set_bpm(get_bpm() + 5);
-//     char buffer[] = "Received tempo up command\n\0";
-//     char* reply = malloc(strlen(buffer) + 1);
-//     strcpy(reply,buffer);
-//     return reply;
-// }
-
-// char* command_tempo_down(void)
-// {
-//     set_bpm(get_bpm() - 5);
-//     char buffer[] = "Received tempo down command\n\0";
-//     char* reply = malloc(strlen(buffer) + 1);
-//     strcpy(reply,buffer);
-//     return reply;
-// }
-
-
-// char* command_beat(char* mode)
-// {
-//     set_beat(mode);
-//     char buffer[] = "Received change beat command\n\0";
-//     char* reply = malloc(strlen(buffer) + 1);
-//     strcpy(reply,buffer);
-//     return reply;
-// }
-
-
-// char* command_stop(void)
-// {
-//     char buffer[] = "Successfully terminated program.\n\0";
-//     char* reply = malloc(strlen(buffer) + 1);
-//     strcpy(reply, buffer);
-//     // stop all background threads
-//     stop_sampling();
-//     stop_displaying();
-//     stop_outputting();
-//     stop_listening();
-//     return reply;
-// }
-
 
 char* call_command(char buffer[MAX_LENGTH])
 {
-    char temp_reply[] = "Received command\n\0";
-    char* reply = malloc(strlen(temp_reply) + 1);
-    memset(reply, 0, strlen(temp_reply) + 1);
-    strcpy(reply, temp_reply);
+    char* reply = NULL;
+    char temp[MAX_LENGTH] = {0};
     // call the appropriate command based on BUFFER
     if(strcmp(buffer, "vol_up") == 0){
         AudioMixer_setVolume(AudioMixer_getVolume() + 5);
-        free(reply);
-        char temp[MAX_LENGTH];
         sprintf(temp, "%d", AudioMixer_getVolume());
-        reply = malloc(strlen(temp) + 1);
-        memset(reply, 0, strlen(temp) + 1);
-        strcpy(reply, temp);
     }
     else if((strcmp(buffer, "vol_down") == 0)){
         AudioMixer_setVolume(AudioMixer_getVolume() - 5);
-        free(reply);
-        char temp[MAX_LENGTH];
         sprintf(temp, "%d", AudioMixer_getVolume());
-        reply = malloc(strlen(temp) + 1);
-        memset(reply, 0, strlen(temp) + 1);
-        strcpy(reply, temp);
     }
     else if((strcmp(buffer, "tempo_up") == 0)){
         set_bpm(get_bpm() + 5);
-        free(reply);
-        char temp[MAX_LENGTH];
         sprintf(temp, "%d", get_bpm());
-        reply = malloc(strlen(temp) + 1);
-        memset(reply, 0, strlen(temp) + 1);
-        strcpy(reply, temp);
     }
     else if((strcmp(buffer, "tempo_down") == 0)){
         set_bpm(get_bpm() - 5);
-        free(reply);
-        char temp[MAX_LENGTH];
         sprintf(temp, "%d", get_bpm());
-        reply = malloc(strlen(temp) + 1);
-        memset(reply, 0, strlen(temp) + 1);
-        strcpy(reply, temp);
     }
     else if(strcmp(buffer, "rock") == 0 || strcmp(buffer, "mine") == 0 || strcmp(buffer, "none") == 0){
         set_beat(buffer);
+        sprintf(temp, "%s", get_beat());
+    }
+    else if(strcmp(buffer, "beat_get") == 0){
+        sprintf(temp, "%s", get_beat());
     }
     else if((strcmp(buffer, "bass") == 0)){
-        // pthread_mutex_lock(get_mutex());
         queue_drum();
-        // pthread_mutex_unlock(get_mutex());
     }
     else if((strcmp(buffer, "snare") == 0)){
-        // pthread_mutex_lock(get_mutex());
         queue_snare();
-        // pthread_mutex_unlock(get_mutex());
     }
     else if((strcmp(buffer, "hihat") == 0)){
         queue_hihat();
     }
     else if((strcmp(buffer, "vol_get") == 0)){
-        free(reply);
-        char temp[MAX_LENGTH];
         sprintf(temp, "%d", AudioMixer_getVolume());
-        reply = malloc(strlen(temp) + 1);
-        memset(reply, 0, strlen(temp) + 1);
-        strcpy(reply, temp);
     }
     else if((strcmp(buffer, "tempo_get") == 0)){
-        free(reply);
-        char temp[MAX_LENGTH];
         sprintf(temp, "%d", get_bpm());
-        reply = malloc(strlen(temp) + 1);
-        memset(reply, 0, strlen(temp) + 1);
-        strcpy(reply, temp);
     }
     else if((strcmp(buffer, "uptime") == 0)){
-        free(reply);
-        char temp[MAX_LENGTH];
         file_read(UPTIME_PATH, temp);
-        reply = malloc(strlen(temp) + 1);
-        memset(reply, 0, strlen(temp) + 1);
-        strcpy(reply, temp);
+        char* ptr = temp;
+        while(!isspace(*ptr)){
+            ptr++;
+        }
+        *ptr = '\0';
+        int time = atof(temp);
+        int seconds = time % 60;
+        time = time / 60;
+        int minutes = time % 60;
+        int hours = time / 60;
+        sprintf(temp, "%02d:%02d:%02d", hours, minutes, seconds);
     }
-    else{
-        free(reply);
-        reply = NULL;
-    }
+    reply = malloc(strlen(temp) + 1);
+    memset(reply, 0, strlen(temp) + 1);
+    strcpy(reply, temp);
     return reply;
 }
 

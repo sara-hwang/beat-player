@@ -38,14 +38,42 @@ $(document).ready(function() {
 	$('#btnStop').click(function(){
 		sendCommand("stop");
 	});
+	
 	window.setInterval(function() {sendCommand("vol_get")}, 1000);
 	window.setInterval(function() {sendCommand("tempo_get")}, 1000);
+	window.setInterval(function() {sendCommand("beat_get")}, 1000);
 	window.setInterval(function() {sendCommand("uptime")}, 1000);
 });
 
 socket.on('connect', function() {	
+	$('#error-box').hide();
 	sendCommand("vol_get");
 	sendCommand("tempo_get");
+	sendCommand("beat_get");
+});
+
+socket.on('disconnect', function() {	
+	$('#error-box').show();
+	$('#error-text').text('Error with NodeJS server!');
+	setTimeout(function(){
+		$('#error-box').hide();
+	}, 10000);
+});
+
+socket.on('reconnect', function() {	
+	$('#error-box').hide();
+});
+
+socket.on('local_ok', function() {	
+	$('#error-box').hide();
+});
+
+socket.on('local-error', function() {
+	$('#error-box').show();
+	$('#error-text').text('Problem with local app!');
+	setTimeout(function(){
+		$('#error-box').hide();
+	}, 10000);
 });
 
 socket.on('vol_reply', function(result) {
@@ -58,6 +86,10 @@ socket.on('tempo_reply', function(result) {
 
 socket.on('uptime_reply', function(result) {
 	$('#status').text(result);
+});
+
+socket.on('mode_reply', function(result) {
+	$('#modeid').text(result);
 });
 
 function sendCommand(message) {

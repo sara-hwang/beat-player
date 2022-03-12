@@ -21,7 +21,7 @@ pthread_t* get_joystick_pthread(void);
 char* get_beat(void);
 void set_beat(char* arg);
 
-void sleep_event(int num_milliseconds);
+void sleep_event(long num_milliseconds);
 
 // desc: returns the address of the first epoll_event struct in the array of 
 //       epoll_event structs. That epoll_event struct is used to store details of
