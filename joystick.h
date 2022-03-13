@@ -1,5 +1,4 @@
-// Elements critical to program initialization and execution are declared here.
-// All necessary libraries are also #included here.
+// Elements critical to joystick initialization and utilization are declared here.
 
 #ifndef INITIALIZE_H_
 #define INITIALIZE_H_
@@ -15,13 +14,20 @@
 #define NANOSECONDS_PER_MILLISECOND 1000000
 #include "wave_player.h"
 
+// desc: initializes joystick GPIO files, spawns the pthread
 void initJoyStick(void);
 
+// desc: returns the local pthread
 pthread_t* get_joystick_pthread(void);
+
+// desc: return the name of the current beat that is playing
 char* get_beat(void);
+
+// desc: set the current beat to ARG
 void set_beat(char* arg);
 
-void sleep_event(long num_milliseconds);
+// Sleeps for NUMBER number of milliseconds.
+void sleep_event(long number);
 
 // desc: returns the address of the first epoll_event struct in the array of 
 //       epoll_event structs. That epoll_event struct is used to store details of
@@ -42,6 +48,9 @@ int init_epoll(void);
 // returns: -1 if init_epoll() returns an error, otherwise details about the event trigger
 int epoll_wait_input(void);
 
+// Function which the pthread loops through.
+//
+// Continuously loops through waiting for an edge trigger and responding to the request.
 void* poll_joystick(void* args);
 
 #endif

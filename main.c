@@ -2,7 +2,9 @@
 
 int main(void)
 {
+    // spawn the pthreads
     initialize_all();
+    // wait for pthreads to finish executing
     if(pthread_join(*get_joystick_pthread(), NULL) != 0 ||
        pthread_join(*get_playback_pthread(), NULL) != 0 ||
        pthread_join(*get_beat_pthread(), NULL) != 0 ||
@@ -11,6 +13,5 @@ int main(void)
         perror("Error joining threads");
         return(-1);
     }
-    stop();
     return 0;
 }

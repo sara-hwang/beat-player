@@ -1,66 +1,76 @@
 #include "udp.h"
 
+static pthread_t udpThreadId;
 
-char* call_command(char buffer[MAX_LENGTH])
+
+pthread_t* get_udp_pthread(void)
+{
+	return &udpThreadId;
+}
+
+char* call_command(char command[MAX_LENGTH])
 {
     char* reply = NULL;
-    char temp[MAX_LENGTH] = {0};
-    // call the appropriate command based on BUFFER
-    if(strcmp(buffer, "vol_up") == 0){
+    char buffer[MAX_LENGTH] = {0};
+    // call the appropriate command based on COMMAND
+    if(strcmp(command, "vol_up") == 0){
         AudioMixer_setVolume(AudioMixer_getVolume() + 5);
-        sprintf(temp, "%d", AudioMixer_getVolume());
+        sprintf(buffer, "%d", AudioMixer_getVolume());
     }
-    else if((strcmp(buffer, "vol_down") == 0)){
+    else if((strcmp(command, "vol_down") == 0)){
         AudioMixer_setVolume(AudioMixer_getVolume() - 5);
-        sprintf(temp, "%d", AudioMixer_getVolume());
+        sprintf(buffer, "%d", AudioMixer_getVolume());
     }
-    else if((strcmp(buffer, "tempo_up") == 0)){
+    else if((strcmp(command, "tempo_up") == 0)){
         set_bpm(get_bpm() + 5);
-        sprintf(temp, "%d", get_bpm());
+        sprintf(buffer, "%d", get_bpm());
     }
-    else if((strcmp(buffer, "tempo_down") == 0)){
+    else if((strcmp(command, "tempo_down") == 0)){
         set_bpm(get_bpm() - 5);
-        sprintf(temp, "%d", get_bpm());
+        sprintf(buffer, "%d", get_bpm());
     }
-    else if(strcmp(buffer, "rock") == 0 || strcmp(buffer, "mine") == 0 || strcmp(buffer, "none") == 0){
-        set_beat(buffer);
-        sprintf(temp, "%s", get_beat());
+    // set the rhythm
+    else if(strcmp(command, "rock") == 0 || strcmp(command, "mine") == 0 || strcmp(command, "none") == 0){
+        set_beat(command);
+        sprintf(buffer, "%s", get_beat());
     }
-    else if(strcmp(buffer, "beat_get") == 0){
-        sprintf(temp, "%s", get_beat());
+    else if(strcmp(command, "beat_get") == 0){
+        sprintf(buffer, "%s", get_beat());
     }
-    else if((strcmp(buffer, "bass") == 0)){
+    // queue a sound
+    else if((strcmp(command, "bass") == 0)){
         queue_drum();
     }
-    else if((strcmp(buffer, "snare") == 0)){
+    else if((strcmp(command, "snare") == 0)){
         queue_snare();
     }
-    else if((strcmp(buffer, "hihat") == 0)){
+    else if((strcmp(command, "hihat") == 0)){
         queue_hihat();
     }
-    else if((strcmp(buffer, "vol_get") == 0)){
-        sprintf(temp, "%d", AudioMixer_getVolume());
+    else if((strcmp(command, "vol_get") == 0)){
+        sprintf(buffer, "%d", AudioMixer_getVolume());
     }
-    else if((strcmp(buffer, "tempo_get") == 0)){
-        sprintf(temp, "%d", get_bpm());
+    else if((strcmp(command, "tempo_get") == 0)){
+        sprintf(buffer, "%d", get_bpm());
     }
-    else if((strcmp(buffer, "uptime") == 0)){
-        file_read(UPTIME_PATH, temp);
-        char* ptr = temp;
+    // return the running time of the program in hours minutes and seconds
+    else if((strcmp(command, "uptime") == 0)){
+        file_read(UPTIME_PATH, buffer);
+        char* ptr = buffer;
         while(!isspace(*ptr)){
             ptr++;
         }
         *ptr = '\0';
-        int time = atof(temp);
+        int time = atof(buffer);
         int seconds = time % 60;
         time = time / 60;
         int minutes = time % 60;
         int hours = time / 60;
-        sprintf(temp, "%02d:%02d:%02d", hours, minutes, seconds);
+        sprintf(buffer, "%02d:%02d:%02d (H:M:S)", hours, minutes, seconds);
     }
-    reply = malloc(strlen(temp) + 1);
-    memset(reply, 0, strlen(temp) + 1);
-    strcpy(reply, temp);
+    reply = malloc(strlen(buffer) + 1);
+    memset(reply, 0, strlen(buffer) + 1);
+    strcpy(reply, buffer);
     return reply;
 }
 
@@ -102,7 +112,6 @@ void* udp_listen(void* args)
     // check if any of the operations in initialize() failed
     if(myArgs == NULL){
         free(myArgs);
-        // command_stop();
         pthread_exit(NULL);
     }
     while(1){
@@ -114,8 +123,6 @@ void* udp_listen(void* args)
         char* command = malloc(strlen(buffer) + 1);
         strcpy(command, buffer);
 
-        printf("%s\n", command);
-        
         // get the response to the message
         char* reply = call_command(command);
         if(reply == NULL){

@@ -1,22 +1,13 @@
 #include "accelerometer.h"
-#include "wave_player.h"
-#include <fcntl.h>
-#include <sys/ioctl.h>
-#include <linux/i2c.h>
-#include <linux/i2c-dev.h>
 
-#define I2CDRV_LINUX_BUS1 "/dev/i2c-1"
-#define NUM_BYTES_TO_READ 7
 
-#define I2C_DEVICE_ADDRESS 0x1C
-#define CTRL_REG1 0x2A
-#define STATUS 0x00
-#define OUT_X_MSB 0x01
-#define OUT_X_LSB 0x02
-#define OUT_Y_MSB 0x03
-#define OUT_Y_LSB 0x04
-#define OUT_Z_MSB 0x05
-#define OUT_Z_LSB 0x06
+static pthread_t accelerometerThreadId;
+
+
+pthread_t* get_accelerometer_pthread(void)
+{
+	return &accelerometerThreadId;
+}
 
 int initI2cBus(char* bus, int address)
 {
@@ -56,13 +47,13 @@ void writeI2cReg(int i2cFileDesc, unsigned char regAddr, unsigned char value)
 
 void* accelerometer_thread(void* args)
 {
+    // initialize I2C
     int i2cFileDesc = initI2cBus(I2CDRV_LINUX_BUS1, I2C_DEVICE_ADDRESS);
+    // set accelerometer to active mode
     writeI2cReg(i2cFileDesc, CTRL_REG1, 1);
     unsigned char* buffer = malloc(NUM_BYTES_TO_READ);
-    int x_threshold = 7000;
-    int y_threshold = 7000;
-    int z_threshold = 6000;
     memset(buffer, 0, NUM_BYTES_TO_READ);
+    // initialize x, y, and z values
     readI2cReg(i2cFileDesc, STATUS, buffer);
     int16_t prev_x = (buffer[OUT_X_MSB] << 8) | (buffer[OUT_X_LSB]);
     int16_t prev_y = (buffer[OUT_Y_MSB] << 8) | (buffer[OUT_Y_LSB]);
@@ -75,15 +66,16 @@ void* accelerometer_thread(void* args)
         int16_t y = (buffer[OUT_Y_MSB] << 8) | (buffer[OUT_Y_LSB]);
         int16_t z = (buffer[OUT_Z_MSB] << 8) | (buffer[OUT_Z_LSB]);
         bool movement_detected = false;
-        if(abs(prev_x - x) > x_threshold){
+        // check if significant movement in one direction
+        if(abs(prev_x - x) > X_TRHESHOLD){
             queue_hihat();
             movement_detected = true;
         }
-        else if(abs(prev_y - y) > y_threshold){
+        else if(abs(prev_y - y) > Y_TRHESHOLD){
             queue_snare();
             movement_detected = true;
         }
-        else if(abs(prev_z - z) > z_threshold){
+        else if(abs(prev_z - z) > Z_TRHESHOLD){
             queue_drum();
             movement_detected = true;
         }

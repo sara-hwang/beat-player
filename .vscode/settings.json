@@ -1,6 +1,7 @@
 {
     "files.associations": {
         "accelerometer.h": "c",
-        "typeinfo": "c"
+        "typeinfo": "c",
+        "istream": "c"
     }
 }

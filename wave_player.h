@@ -27,15 +27,28 @@
 #define MIN_BPM 40
 #define NANOSECONDS_PER_MILLISECOND 1000000
 
-void set_bpm(int new_bpm);
-int get_bpm(void);
-void queue_hihat(void);
-void queue_snare(void);
-void queue_drum(void);
-void* play_beat(void*);
+// Returns the address of the local pthread.
 pthread_t* get_beat_pthread(void);
-pthread_t* get_accelerometer_pthread(void);
-pthread_t* get_udp_pthread(void);
+
+// Spawns all the other threads necessary for program execution: thread for queue sounds, 
+// accelerometer thread, joystick thread, and UDP thread. Also initializes the audio mixer 
+// and loads the needed wav files.
 void initialize_all(void);
 
-void stop(void);
+// Set the BPM to NEW_BPM if NEW_BPM is within the range [MIN_BPM, MAX_BPM].
+void set_bpm(int new_bpm);
+
+// Returns the current BPM.
+int get_bpm(void);
+
+// Queue a hihat sound to be played.
+void queue_hihat(void);
+
+// Queue a snare sound to be played.
+void queue_snare(void);
+
+// Queue a drum sound to be played.
+void queue_drum(void);
+
+// Function that the pthread loops through. Plays a rhythm depending on the mode that is selected.
+void* play_beat(void*);

@@ -38,7 +38,6 @@ void set_beat(char* name)
 	}
 }
 
-// Sleeps for NUMBER number of milliseconds.
 void sleep_event(long number)
 {
 	long seconds = 0;
@@ -157,11 +156,11 @@ void* poll_joystick(void* args)
 		if (joystick == -1) {
 			exit(EXIT_FAILURE);
 		}
-
 		char buffer[1] = {0};
 		char file_name[MAX_LENGTH];
-
+		// check which joystick direction was pushed
 		if(joystick == get_fd(in)){
+			// cycle through the preset rhythms while pressed
 			memset(file_name, '\0', MAX_LENGTH);
 			strcpy(file_name, get_path(in));
 			strcat(file_name, "/value");
@@ -172,6 +171,7 @@ void* poll_joystick(void* args)
 			}while(strncmp(buffer, pointer, 1) == 0);
 		}
 		else if(joystick == get_fd(left)) {
+			// decrease the BPM by 5 while pressed
 			memset(file_name, '\0', MAX_LENGTH);
 			strcpy(file_name, get_path(left));
 			strcat(file_name, "/value");
@@ -182,6 +182,7 @@ void* poll_joystick(void* args)
 			}while(strncmp(buffer, pointer, 1) == 0);
 		}
 		else if(joystick == get_fd(right)) {
+			// increase the BPM by 5 while pressed
 			memset(file_name, '\0', MAX_LENGTH);
 			strcpy(file_name, get_path(right));
 			strcat(file_name, "/value");
@@ -192,6 +193,7 @@ void* poll_joystick(void* args)
 			}while(strncmp(buffer, pointer, 1) == 0);
 		}
 		else if(joystick == get_fd(up)){
+			// increase the volume by 5 while pressed
 			memset(file_name, '\0', MAX_LENGTH);
 			strcpy(file_name, get_path(up));
 			strcat(file_name, "/value");
@@ -202,6 +204,7 @@ void* poll_joystick(void* args)
 			}while(strncmp(buffer, pointer, 1) == 0);
 		}
         else if(joystick == get_fd(down)){
+			// decrease the volume by 5 while pressed
 			memset(file_name, '\0', MAX_LENGTH);
 			strcpy(file_name, get_path(down));
 			strcat(file_name, "/value");

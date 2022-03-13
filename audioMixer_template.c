@@ -4,15 +4,6 @@
 #include "audioMixer_template.h"
 
 static snd_pcm_t *handle;
-// Currently active (waiting to be played) sound bites
-#define MAX_SOUND_BITES 30
-#define DEFAULT_VOLUME 80
-#define SAMPLE_RATE 44100
-#define NUM_CHANNELS 1
-#define SAMPLE_SIZE (sizeof(short)) 			// bytes per sample
-// Sample size note: This works for mono files because each sample ("frame') is 1 value.
-// If using stereo files then a frame would be two samples.
-
 static int volume = 0;
 static unsigned long playbackBufferSize = 0;
 static short *playbackBuffer = NULL;
@@ -20,7 +11,6 @@ static short *playbackBuffer = NULL;
 static _Bool stopping = false;
 static pthread_t playbackThreadId;
 static pthread_mutex_t audioMutex = PTHREAD_MUTEX_INITIALIZER;
-// static pthread_cond_t audio_cond_var = PTHREAD_COND_INITIALIZER;
 
 typedef struct {
 	// A pointer to a previously allocated sound bite (wavedata_t struct).
@@ -50,12 +40,10 @@ void AudioMixer_init(void)
 	// Initialize the currently active sound-bites being played
 	// REVISIT:- Implement this. Hint: set the pSound pointer to NULL for each
 	//     sound bite.
-
 	for(int i = 0; i < MAX_SOUND_BITES; i++){
 		soundBites[i].pSound = NULL;
 		soundBites[i].location = 0;
 	}
-
 
 	// Open the PCM output
 	int err = snd_pcm_open(&handle, "default", SND_PCM_STREAM_PLAYBACK, 0);
@@ -140,12 +128,10 @@ void AudioMixer_freeWaveFileData(wavedata_t* pSound)
 void AudioMixer_queueSound(wavedata_t* pSound)
 {
 	// Ensure we are only being asked to play "good" sounds:
-	assert(pSound->numSamples > 0);
-	assert(pSound->pData);
+	// assert(pSound->numSamples > 0);
+	// assert(pSound->pData);
 
 	// Insert the sound by searching for an empty sound bite spot
-	// pthread_mutex_lock(&audioMutex);
-
 	for(int i = 0; i < MAX_SOUND_BITES; i++){
 		if(soundBites[i].pSound == NULL){
 			soundBites[i].pSound = pSound;
@@ -153,8 +139,6 @@ void AudioMixer_queueSound(wavedata_t* pSound)
 			return;
 		}
 	}
-	// pthread_cond_signal(&audio_cond_var);
-	// pthread_mutex_unlock(&audioMutex);
 	printf("No empty slots!\n");
 	return;
 }
@@ -230,11 +214,11 @@ void AudioMixer_setVolume(int newVolume)
 static void fillPlaybackBuffer(short* playbackBuffer, int size)
 {
 	memset(playbackBuffer, 0, sizeof(*playbackBuffer)*size);
-	// pthread_mutex_lock(&audioMutex);
-	// pthread_cond_wait(&audio_cond_var, &audioMutex);
+	// go through the queued sounds and add them to the playback buffer
 	for(int i = 0; i < MAX_SOUND_BITES; i++){
 		if(soundBites[i].pSound != NULL){
 			for(int j = 0; j < size; j++){
+				// clamp the PCM values to the min/max if necessary
 				if(playbackBuffer[j] + soundBites[i].pSound->pData[soundBites[i].location] > SHRT_MAX){
 					playbackBuffer[j] = SHRT_MAX;
 				}
@@ -244,6 +228,8 @@ static void fillPlaybackBuffer(short* playbackBuffer, int size)
 				else{
 					playbackBuffer[j] += soundBites[i].pSound->pData[soundBites[i].location];
 				}
+				// update the location of where we are in the queued sound and empty the spot if we are 
+				// finished playing the entire sound.
 				if(++(soundBites[i].location) == soundBites[i].pSound->numSamples){
 					soundBites[i].location = 0;
 					soundBites[i].pSound = NULL;
@@ -252,7 +238,6 @@ static void fillPlaybackBuffer(short* playbackBuffer, int size)
 			}
 		}
 	}
-	// pthread_mutex_unlock(&audioMutex);
 }
 
 

@@ -41,3 +41,5 @@ node:
 
 clean:
 	rm -f $(OUTDIR)/$(TARGET)
+	rm -f -r $(OUTDIR)/beatbox-server-copy  
+	rm -f -r $(OUTDIR)/beatbox-wav-files

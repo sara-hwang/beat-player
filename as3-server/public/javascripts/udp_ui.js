@@ -4,6 +4,11 @@
 // Make connection to server when web page is fully loaded.
 var socket = io.connect();
 
+var volume_interval;
+var tempo_interval;
+var beat_interval;
+var uptime_interval;
+
 $(document).ready(function() {
 	$('#volumeUp').click(function(){
 		sendCommand("vol_up");
@@ -39,10 +44,10 @@ $(document).ready(function() {
 		sendCommand("stop");
 	});
 	
-	window.setInterval(function() {sendCommand("vol_get")}, 1000);
-	window.setInterval(function() {sendCommand("tempo_get")}, 1000);
-	window.setInterval(function() {sendCommand("beat_get")}, 1000);
-	window.setInterval(function() {sendCommand("uptime")}, 1000);
+	volume_interval = window.setInterval(function() {sendCommand("vol_get")}, 1000);
+	tempo_interval = window.setInterval(function() {sendCommand("tempo_get")}, 1000);
+	beat_interval = window.setInterval(function() {sendCommand("beat_get")}, 1000);
+	uptime_interval = window.setInterval(function() {sendCommand("uptime")}, 1000);
 });
 
 socket.on('connect', function() {	
@@ -71,6 +76,10 @@ socket.on('local_ok', function() {
 socket.on('local-error', function() {
 	$('#error-box').show();
 	$('#error-text').text('Problem with local app!');
+	clearInterval(volume_interval);
+	clearInterval(beat_interval);
+	clearInterval(tempo_interval);
+	clearInterval(uptime_interval);
 	setTimeout(function(){
 		$('#error-box').hide();
 	}, 10000);
